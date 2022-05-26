@@ -1,0 +1,52 @@
+---
+- hosts: webservers:loadbalancers
+  become: true
+  become_method: sudo
+  vars:
+    doc_root: /var/www
+    nginx_sites: /etc/nginx/sites-available
+    conf_file: devopsdemo-site
+  tasks:
+    - name: Update apt
+      apt: update_cache=yes
+
+    - name: Install nginx
+      apt:
+        name=nginx
+        state=latest
+
+    - name: copy site contents
+      copy:
+        src=~/ansible/Project_multicloud/
+        dest={{ doc_root }}/devopsdemo-site
+        mode=0644
+      tags: [ 'update', 'sync' ]
+
+
+
+    - name: Delete default nginx vhost
+      file:
+        path={{ nginx_sites }}/default
+        state=absent
+
+    - name: Delete default nginx vhost symlink
+      file: path=/etc/nginx/sites-enabled/default state=absent
+
+    - name: Setup nginx vhost
+      template:
+        src=~/ansible/nginx-server.cfg
+        dest={{ nginx_sites }}/{{ conf_file }}.conf
+
+    - name: Create symlink nginx vhost
+      file:
+        src={{ nginx_sites }}/{{ conf_file }}.conf
+        dest=/etc/nginx/sites-enabled/{{ conf_file }}.conf
+        state=link
+      notify: restart nginx
+
+  handlers:
+    - name: restart nginx
+      service:
+        name=nginx
+        state=restarted
+

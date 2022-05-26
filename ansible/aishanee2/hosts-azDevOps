@@ -1,0 +1,11 @@
+# hosts-azDevOps
+
+[webservers]
+app1 ansible_host=20.28.154.245
+app2 ansible_host=20.28.154.217
+
+[loadbalancers]
+lb1 ansible_host=20.28.154.164
+
+[local]
+control ansible_connection=local

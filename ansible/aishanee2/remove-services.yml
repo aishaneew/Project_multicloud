@@ -1,0 +1,38 @@
+# remove services
+
+---
+- hosts: webservers:loadbalancers
+  become: true
+  become_method: sudo
+  tasks:
+    - name: "Stop Nginx Services"
+      service:
+        name: nginx
+        state: stopped
+
+    - name: "Uninstall NginX"
+      apt:
+        name: nginx
+        state: absent
+
+
+    - name: "Uninstall nodejs"
+      apt:
+        name: nodejs
+        state: absent
+
+    - name: Ansible delete file glob
+      find:
+        paths: /var/www/html/
+        patterns: index.*
+      register: files_to_delete
+
+    - name: run apt-get update for all the services
+      apt:
+        update_cache: yes
+        
+    - name: updating apt package
+      apt: name=* state=latest
+
+
+    
